@@ -36,7 +36,7 @@ let analyser, data_array, frequency_array, audioBuffer, source, playing = false
 let bass_thickness = 2
 let half_bass_thickness = 1
 
-document.getElementById('play_btn').addEventListener('click', function() {
+document.getElementById('play_btn').addEventListener('click', () => {
     if (playing) return
 
     // get the image, if they chose one
@@ -57,11 +57,11 @@ document.getElementById('play_btn').addEventListener('click', function() {
     amp_color = document.getElementById("amp_color").value
     source.onended = () => { playing = false }
 })
-document.getElementById('audio_file').addEventListener('change', function(e) {
+document.getElementById('audio_file').addEventListener('change', (e) => {
     const file = e.target.files[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = function(ev) {
+    reader.onload = ev => {
         audioContext.decodeAudioData(ev.target.result, (buffer) => {
             audioBuffer = buffer
             document.getElementById('play_btn').disabled = false
@@ -76,7 +76,7 @@ document.getElementById('audio_file').addEventListener('change', function(e) {
  * 
  * oldraw
  */
-function draw() {
+const draw = () => {
     if (!playing) return
     analyser.getByteTimeDomainData(data_array)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -188,7 +188,7 @@ const D = 410  // Distance from the viewer (larger values make objects appear sm
 
 const clearScreen = () => ctx.clearRect(0, 0, width, height) // Clear the canvas to prepare for the next frame
 
-function point(x, y) {
+const point = (x, y) => {
     ctx.fillStyle = bass_color 
     ctx.beginPath()
     ctx.arc(x, y, half_bass_thickness, 0, 2 * Math.PI, true)
@@ -214,7 +214,7 @@ const set_bass_thickness = () => {
     half_bass_thickness = bass_thickness / 2
 }
 
-function line(x1, y1, x2, y2, array_half, taper_start) {
+const line = (x1, y1, x2, y2, array_half, taper_start) => {
 
     const xy_start = { x: x1, y: y1 }
     const xy_end = { x: x2, y: y2 }
@@ -222,7 +222,7 @@ function line(x1, y1, x2, y2, array_half, taper_start) {
     // draw bass line:
     if (!playing || true) {
         // draw the normal lines (BASS LINES)
-        ctx.lineWidth = bass_thickness
+        ctx.lineWidth = 3
         ctx.strokeStyle = bass_color
         ctx.beginPath()  // Start a new drawing path
         ctx.moveTo(x1, y1)  // Move to the start point
@@ -294,7 +294,7 @@ class vector {
 }
 
 
-function project3Dto2D(x, y, z) {
+const project3Dto2D = (x, y, z) => {
     const x2D = (x / (z + D)) * f + width / 2
     const y2D = fake_title ? -((y + tilt * z) / (z + D)) * f + height / 2 : (-(y / (z + D)) * f + height / 2)
     return { x: x2D, y: y2D }  // Return the 2D coordinates
@@ -325,14 +325,13 @@ class model {
         const second_half = playing ? data_array.slice(half_length) : [];
         
         // First, draw the points (guarantees rounded corners)
-        if (playing && bass_thickness > 2) {
+        if (false && playing && bass_thickness > 2) {
             this.points.forEach(this_point => this_point.draw())
         }
 
         // Draw the edges BEHIND the guy
         this.edges.forEach(this_edge => {
             const edge_points = this_edge.points
-            if (edge_points[0].z < 0 && edge_points[1].z < 0) return
             const array_half = this_edge.start_0 ? first_half : second_half
             const start = edge_points[0].get_point2d() // Start point of the edge
             const end = edge_points[1].get_point2d() // End point of the edge
@@ -344,7 +343,6 @@ class model {
             ctx.setLineDash([5, 15]); // 5px dash, 15px gap
             this.dotted_edges.forEach(this_edge => {
                 const edge_points = this_edge.points
-                if (edge_points[0].z < 0 && edge_points[1].z < 0) return
                 const array_half = this_edge.start_0 ? first_half : second_half
                 const start = edge_points[0].get_point2d() // Start point of the edge
                 const end = edge_points[1].get_point2d() // End point of the edge
@@ -366,7 +364,7 @@ class model {
         // Draw the edges in FRONT of the guy
         this.edges.forEach(this_edge => {
             const edge_points = this_edge.points
-            if (edge_points[0].z < 5 || edge_points[1].z < 5) {    
+            if (edge_points[0].z < -29 || edge_points[1].z < -29) {    
                 const array_half = this_edge.start_0 ? first_half : second_half            
                 const start = edge_points[0].get_point2d() // Start point of the edge
                 const end = edge_points[1].get_point2d() // End point of the edge
@@ -532,7 +530,7 @@ const mdl = new model("cube", points, edges, inner_edges)
 mdl.scale(1)  // Initial scaling of the model
 
 // Function to update the canvas, clear the screen, and draw the model
-function update() {
+const update = () => {
     clearScreen() // Clear the screen before drawing
 
     // rotate and draw the model

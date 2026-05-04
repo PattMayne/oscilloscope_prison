@@ -1,7 +1,42 @@
+body {
+    background-color: black;
+    color:aliceblue;
+}
 
 
 .controls {
     width: 100%;
-    display: flex;
     margin-top:20px;
+}
+
+#canvas {
+    background: transparent;
+    /*
+    background-image: url('./img/coolguy_bg.png');
+    margin-left: 250px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+     */
+    width: 25%;
+    height: auto;
+    display: block;
+}
+
+button, .button {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+button:hover, .button:hover {
+    background-color: #555;
+    color:black;
 }

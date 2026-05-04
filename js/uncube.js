@@ -26,10 +26,13 @@ const width = canvas.width
 const height = canvas.height
 
 const ctx = canvas.getContext('2d')
-ctx.strokeStyle = "#00ff10"  // Set the color for the line
-ctx.lineWidth = 2  // Set the width of the line
-// ctx.strokeStyle = 'black'
-let analyser, dataArray, audioBuffer, source, playing = false
+ctx.strokeStyle = "#ff3700"
+ctx.lineWidth = 2
+let bass_color = document.getElementById("bass_color").value
+let amp_color = document.getElementById("amp_color").value
+let analyser, data_array, frequency_array, audioBuffer, source, playing = false
+let bass_thickness = 2
+let half_bass_thickness = 1
 
 document.getElementById('play_btn').addEventListener('click', function() {
     if (playing) return
@@ -39,10 +42,12 @@ document.getElementById('play_btn').addEventListener('click', function() {
     source.connect(analyser)
     analyser.connect(audioContext.destination)
     analyser.fftSize = 2048
-    dataArray = new Uint8Array(analyser.fftSize)
+    data_array = new Uint8Array(analyser.fftSize)
+    frequency_array = new Uint8Array(analyser.frequencyBinCount)
     source.start()
     playing = true
-    //draw()
+    bass_color = document.getElementById("bass_color").value
+    amp_color = document.getElementById("amp_color").value
     source.onended = () => { playing = false }
 })
 document.getElementById('audio_file').addEventListener('change', function(e) {
@@ -53,10 +58,10 @@ document.getElementById('audio_file').addEventListener('change', function(e) {
         audioContext.decodeAudioData(ev.target.result, (buffer) => {
             audioBuffer = buffer
             document.getElementById('play_btn').disabled = false
-        });
-    };1
+        })
+    }
     reader.readAsArrayBuffer(file)
-});
+})
 
 
 /** OBSOLETE. We will scavenge wave-drawing logic from this function.
@@ -66,15 +71,15 @@ document.getElementById('audio_file').addEventListener('change', function(e) {
  */
 function draw() {
     if (!playing) return;
-    analyser.getByteTimeDomainData(dataArray);
+    analyser.getByteTimeDomainData(data_array)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.beginPath()
 
-    dataArray.forEach((element, i) => {
-        let x = (i / dataArray.length) * canvas.width
+    data_array.forEach((element, i) => {
+        let x = (i / data_array.length) * canvas.width
 
         // the 255 can be modified by the z-axis to make the waves appear smaller in the distance
-        let y = (dataArray[i] / 500) * canvas.height
+        let y = (data_array[i] / 500) * canvas.height
 
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
@@ -90,44 +95,44 @@ function draw() {
 
 // ALSO we're giving the whole delta to each axis.
 // Whichever axis is more straight should get that much more of the change to display.
-const draw_wave = (xy_start, xy_end, taper_start) => {
+const draw_wave = (xy_start, xy_end, array_half, taper_start = false) => {
     if (!playing) return;
-    analyser.getByteTimeDomainData(dataArray)
+    
     ctx.beginPath()
 
-    const array_length = dataArray.length
+    const array_length = array_half.length
     const y_diff = xy_end.y - xy_start.y
     const x_diff = xy_end.x - xy_start.x
 
-    ctx.strokeStyle = "#00ff10"  // Set the color for the line
+    ctx.lineWidth = 2
 
     // store this elsewhere
-    const taper_cutoff_fraction = 1.0 / 5.0
+    const taper_cutoff_fraction = 1.0 / 3
 
-    dataArray.forEach((element, i) => {
+    array_half.forEach((node, i) => {
 
-        const levelled_element = element - 128
+        const levelled_node = node - 128
         const y_diff_is_greater = Math.abs(y_diff) > Math.abs(x_diff)
         const fraction_cleared = i / array_length
         const fraction_remaining = 1.0 - fraction_cleared
-        const scale_max = 40
+        const scale_max = 15
 
-        const scale_down = fraction_cleared < taper_cutoff_fraction ?
+        const scale_down = fraction_cleared < taper_cutoff_fraction && !taper_start ?
         5 + scale_max - (fraction_cleared / taper_cutoff_fraction) * scale_max :
-        fraction_cleared > (1.0 - taper_cutoff_fraction) ?
+        fraction_cleared > (1.0 - taper_cutoff_fraction) && taper_start ?
         5 + scale_max - (fraction_remaining / taper_cutoff_fraction) * scale_max :
         5
 
         const y_adjustment = y_diff * fraction_cleared
         const x_adjustment =
-            y_diff_is_greater ? x_diff * fraction_cleared + (element - 128) / scale_down:
+            y_diff_is_greater ? x_diff * fraction_cleared + (node - 128) / scale_down:
             fraction_cleared * (xy_end.x - xy_start.x)
 
         const x = xy_start.x + x_adjustment
         const y =
             xy_start.y +
             y_adjustment + // move up y-axis along with the wave.
-            levelled_element / scale_down // max amp is 255, so center at 128 and scale down by 5
+            levelled_node / scale_down // max amp is 255, so center at 128 and scale down by 5
 
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
@@ -166,10 +171,10 @@ const tilt = 0.2
 
 const guy_is_cool = true
 const dotted_lines = false
+const include_inner_edges = false
 
 //const conguy = document.getElementById("./img/conguy.png")
 let conguy = new Image();
-//conguy.src = "./img/coolconguy.png"
 conguy.src = guy_is_cool ? "./img/coolconguy.png" : "./img/conguy.png"
 
 const timeout = 60 // Timeout for animation update
@@ -178,30 +183,50 @@ const D = 410  // Distance from the viewer (larger values make objects appear sm
 
 const clearScreen = () => ctx.clearRect(0, 0, width, height) // Clear the canvas to prepare for the next frame
 
-function point(x, y, radius = 5, color = "white") {
-    ctx.fillStyle = color  // Set the color for the point
-    ctx.beginPath()  // Start a new drawing path
-    ctx.arc(x, y, radius, 0, 2 * Math.PI, true)  // Draw a circle (point) at (x, y)
-    ctx.fill()  // Fill the circle with the chosen color
-    ctx.closePath()  // Close the drawing path
+function point(x, y) {
+    ctx.fillStyle = bass_color 
+    ctx.beginPath()
+    ctx.arc(x, y, half_bass_thickness, 0, 2 * Math.PI, true)
+    ctx.fill()
+    ctx.closePath()
 }
 
 
-function line(x1, y1, x2, y2, taper_start = false) {
+const get_bass_thickness = () => {
+    if (!playing) return 2
 
-    ctx.strokeStyle = "#0095ff"  // Set the color for the line
+    const bass_bins = frequency_array.slice(0, 10) // First 10 bins
+    const bass_average =
+        bass_bins.reduce((sum, val) => sum + val, 0) / bass_bins.length
+    
+    const max_thickness = 12
+    const thickness = (bass_average / 255) * max_thickness
+    return thickness < 2 ? 2 : thickness
+}
 
-    if (!playing) {
+const set_bass_thickness = () => {
+    bass_thickness = get_bass_thickness()
+    half_bass_thickness = bass_thickness / 2
+}
+
+function line(x1, y1, x2, y2, array_half, taper_start) {
+
+    const xy_start = { x: x1, y: y1 }
+    const xy_end = { x: x2, y: y2 }
+
+    // draw bass line:
+    if (!playing || true) {
+        // draw the normal lines (BASS LINES)
+        ctx.lineWidth = bass_thickness
+        ctx.strokeStyle = bass_color
         ctx.beginPath()  // Start a new drawing path
         ctx.moveTo(x1, y1)  // Move to the start point
         ctx.lineTo(x2, y2)  // Draw a line to the end point
         ctx.stroke()  // Apply the stroke to render the line
     }
 
-    const xy_start = { x: x1, y: y1 }
-    const xy_end = { x: x2, y: y2 }
-
-    draw_wave(xy_end, xy_start, taper_start)
+    ctx.strokeStyle = amp_color
+    draw_wave(xy_end, xy_start, array_half, taper_start)
 }
 
 
@@ -283,17 +308,46 @@ class model {
     // Draw the model on the canvas
     draw() {
 
-        // First, draw the points (actually skip this)
-        false && this.points.forEach(this_point => this_point.draw()) // Draw each point using the draw method from the vector class
+        // Draw the same data array on every line
+        if (playing) {
+            analyser.getByteTimeDomainData(data_array)
+            analyser.getByteFrequencyData(frequency_array)
+            set_bass_thickness()
+        }
+        
+        const half_length = playing ? Math.floor(data_array.length / 2) : 0;
+        const first_half = playing ? data_array.slice(0, half_length) : [];
+        const second_half = playing ? data_array.slice(half_length) : [];
+        
+        // First, draw the points (guarantees rounded corners)
+        if (playing && bass_thickness > 2) {
+            this.points.forEach(this_point => this_point.draw())
+        }
 
         // Draw the edges BEHIND the guy
         this.edges.forEach(this_edge => {
             const edge_points = this_edge.points
             if (edge_points[0].z < 0 && edge_points[1].z < 0) return
+            const array_half = this_edge.start_0 ? first_half : second_half
             const start = edge_points[0].get_point2d() // Start point of the edge
             const end = edge_points[1].get_point2d() // End point of the edge
-            line(start.x, start.y, end.x, end.y, this_edge.start_0) // Draw the line between the two points
+            line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0) // Draw the line between the two points
         })
+
+
+        if (dotted_lines) {
+            ctx.setLineDash([5, 15]); // 5px dash, 15px gap
+            this.dotted_edges.forEach(this_edge => {
+                const edge_points = this_edge.points
+                if (edge_points[0].z < 0 && edge_points[1].z < 0) return
+                const array_half = this_edge.start_0 ? first_half : second_half
+                const start = edge_points[0].get_point2d() // Start point of the edge
+                const end = edge_points[1].get_point2d() // End point of the edge
+                line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0)
+            })
+            ctx.setLineDash([]); // Reset to solid line
+        }
+
 
         // draw face
         ctx.drawImage(
@@ -307,20 +361,24 @@ class model {
         // Draw the edges in FRONT of the guy
         this.edges.forEach(this_edge => {
             const edge_points = this_edge.points
-            if (edge_points[0].z < 5 || edge_points[1].z < 5) {                
+            if (edge_points[0].z < 5 || edge_points[1].z < 5) {    
+                const array_half = this_edge.start_0 ? first_half : second_half            
                 const start = edge_points[0].get_point2d() // Start point of the edge
                 const end = edge_points[1].get_point2d() // End point of the edge
-                line(start.x, start.y, end.x, end.y) // Draw the line between the two points
+                line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0)
             }
         })
 
         if (dotted_lines) {
             ctx.setLineDash([5, 15]); // 5px dash, 15px gap
             this.dotted_edges.forEach(this_edge => {
-                const edge_points = this_edge.points
-                const start = edge_points[0].get_point2d() // Start point of the edge
-                const end = edge_points[1].get_point2d() // End point of the edge
-                line(start.x, start.y, end.x, end.y) // Draw the line between the two points
+                const edge_points = this_edge.points                
+                if (edge_points[0].z < 5 || edge_points[1].z < 5) {
+                    const array_half = this_edge.start_0 ? first_half : second_half
+                    const start = edge_points[0].get_point2d() // Start point of the edge
+                    const end = edge_points[1].get_point2d() // End point of the edge
+                    line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0)
+                }
             })
             ctx.setLineDash([]); // Reset to solid line
         }
@@ -461,7 +519,7 @@ const partial_inner_edges = [
 ]
 
 
-!guy_is_cool && edges.push(...inner_edges)
+!!include_inner_edges && edges.push(...inner_edges)
 
 
 // Create the model using the points and edges defined above
@@ -474,7 +532,7 @@ function update() {
 
     // rotate and draw the model
     mdl.rotateY(5)
-    //mdl.rotateZ(-0.5)
+    mdl.rotateZ(-0.5)
     mdl.rotateX(0.7)
     mdl.draw()
 

@@ -8,27 +8,42 @@
     <link rel="stylesheet" href="./css/app.css?">
 </head>
 
-<body style="background-color: black;">
+<body>
     <br><br><br>
     <!-- Create a canvas element to draw on -->
-    <canvas id="canvas" width="400" height="400" style="
-        background: transparent;
-        background-image: url('./img/coolguy_bg.png');
-        margin-left: 250px;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 25%;
-        height: auto;
-        display: block;"></canvas>
-
+    <canvas id="canvas" width="400" height="400"></canvas>
 
 
     <div class="controls">
         <input type="file" id="audio_file" accept="audio/*">
+        <br>
+
+        <label>BASS COLOR:
+            <select id="bass_color">
+                <option value="#0095ff">Blue</option>
+                <option value="#ff3700">Red</option>
+                <option value="#00ff10">Green</option>
+                <option value="#ffffff">White</option>
+            </select>
+        </label>
+
+        <br>
+        
+        <label>AMPLITUDE COLOR:
+            <select id="amp_color">
+                <option value="#00ff10">Green</option>
+                <option value="#0095ff">Blue</option>
+                <option value="#ff3700">Red</option>
+                <option value="#ffffff">White</option>
+            </select>
+        </label>
+
+        <br>
+        
+
         <button id="play_btn" disabled>Play</button>
     </div>
-    <script src="./js/uncube.js?version=149"></script>
+    <script src="./js/uncube.js?version=1492"></script>
 </body>
 
 </html>

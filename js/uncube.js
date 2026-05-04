@@ -87,25 +87,47 @@ function draw() {
 
 // For now each line (each half line) draws the whole wave.
 // Later we will split the wave in two and share between the two lines.
-const draw_wave = (xy_start, xy_end) => {
+
+// ALSO we're giving the whole delta to each axis.
+// Whichever axis is more straight should get that much more of the change to display.
+const draw_wave = (xy_start, xy_end, taper_start) => {
     if (!playing) return;
     analyser.getByteTimeDomainData(dataArray)
     ctx.beginPath()
 
     const array_length = dataArray.length
     const y_diff = xy_end.y - xy_start.y
-
+    const x_diff = xy_end.x - xy_start.x
 
     ctx.strokeStyle = "#00ff10"  // Set the color for the line
 
+    // store this elsewhere
+    const taper_cutoff_fraction = 1.0 / 5.0
+
     dataArray.forEach((element, i) => {
-        const percentage_cleared = i / array_length
-        const y_adjustment = (1 - percentage_cleared) * y_diff
-        const x = xy_start.x + (i / dataArray.length) * (xy_end.x - xy_start.x)
+
+        const levelled_element = element - 128
+        const y_diff_is_greater = Math.abs(y_diff) > Math.abs(x_diff)
+        const fraction_cleared = i / array_length
+        const fraction_remaining = 1.0 - fraction_cleared
+        const scale_max = 40
+
+        const scale_down = fraction_cleared < taper_cutoff_fraction ?
+        5 + scale_max - (fraction_cleared / taper_cutoff_fraction) * scale_max :
+        fraction_cleared > (1.0 - taper_cutoff_fraction) ?
+        5 + scale_max - (fraction_remaining / taper_cutoff_fraction) * scale_max :
+        5
+
+        const y_adjustment = y_diff * fraction_cleared
+        const x_adjustment =
+            y_diff_is_greater ? x_diff * fraction_cleared + (element - 128) / scale_down:
+            fraction_cleared * (xy_end.x - xy_start.x)
+
+        const x = xy_start.x + x_adjustment
         const y =
-            xy_start.y + // baseline y position. Everything should be added to this.
-            (y_diff * percentage_cleared) + // move up the y-axis as we go through the wave.
-            (element - 128) / 5 // the actual wave oscillation (centered around 0 by subtracting 128)
+            xy_start.y +
+            y_adjustment + // move up y-axis along with the wave.
+            levelled_element / scale_down // max amp is 255, so center at 128 and scale down by 5
 
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
@@ -165,11 +187,11 @@ function point(x, y, radius = 5, color = "white") {
 }
 
 
-function line(x1, y1, x2, y2) {
+function line(x1, y1, x2, y2, taper_start = false) {
 
     ctx.strokeStyle = "#0095ff"  // Set the color for the line
 
-    if (!playing || true) {
+    if (!playing) {
         ctx.beginPath()  // Start a new drawing path
         ctx.moveTo(x1, y1)  // Move to the start point
         ctx.lineTo(x2, y2)  // Draw a line to the end point
@@ -179,7 +201,7 @@ function line(x1, y1, x2, y2) {
     const xy_start = { x: x1, y: y1 }
     const xy_end = { x: x2, y: y2 }
 
-    draw_wave(xy_end, xy_start)
+    draw_wave(xy_end, xy_start, taper_start)
 }
 
 
@@ -266,10 +288,11 @@ class model {
 
         // Draw the edges BEHIND the guy
         this.edges.forEach(this_edge => {
-            if (this_edge[0].z < 0 && this_edge[1].z < 0) return
-            const start = this_edge[0].get_point2d() // Start point of the edge
-            const end = this_edge[1].get_point2d() // End point of the edge
-            line(start.x, start.y, end.x, end.y) // Draw the line between the two points
+            const edge_points = this_edge.points
+            if (edge_points[0].z < 0 && edge_points[1].z < 0) return
+            const start = edge_points[0].get_point2d() // Start point of the edge
+            const end = edge_points[1].get_point2d() // End point of the edge
+            line(start.x, start.y, end.x, end.y, this_edge.start_0) // Draw the line between the two points
         })
 
         // draw face
@@ -283,9 +306,10 @@ class model {
 
         // Draw the edges in FRONT of the guy
         this.edges.forEach(this_edge => {
-            if (this_edge[0].z < 5 || this_edge[1].z < 5) {                
-                const start = this_edge[0].get_point2d() // Start point of the edge
-                const end = this_edge[1].get_point2d() // End point of the edge
+            const edge_points = this_edge.points
+            if (edge_points[0].z < 5 || edge_points[1].z < 5) {                
+                const start = edge_points[0].get_point2d() // Start point of the edge
+                const end = edge_points[1].get_point2d() // End point of the edge
                 line(start.x, start.y, end.x, end.y) // Draw the line between the two points
             }
         })
@@ -293,8 +317,9 @@ class model {
         if (dotted_lines) {
             ctx.setLineDash([5, 15]); // 5px dash, 15px gap
             this.dotted_edges.forEach(this_edge => {
-                const start = this_edge[0].get_point2d() // Start point of the edge
-                const end = this_edge[1].get_point2d() // End point of the edge
+                const edge_points = this_edge.points
+                const start = edge_points[0].get_point2d() // Start point of the edge
+                const end = edge_points[1].get_point2d() // End point of the edge
                 line(start.x, start.y, end.x, end.y) // Draw the line between the two points
             })
             ctx.setLineDash([]); // Reset to solid line
@@ -388,51 +413,51 @@ const points = [
 
 const edges = [
     // Square facing me (outside)
-    [points[0], points[1]],
-    [points[1], points[2]],
-    [points[2], points[3]],
-    [points[3], points[4]],
-    [points[4], points[5]],
-    [points[5], points[6]],
-    [points[6], points[7]],
-    [points[7], points[0]],
+    { points: [points[0], points[1]], start_0: true },
+    { points: [points[1], points[2]], start_0: false },
+    { points: [points[2], points[3]], start_0: true },
+    { points: [points[3], points[4]], start_0: false },
+    { points: [points[4], points[5]], start_0: true },
+    { points: [points[5], points[6]], start_0: false },
+    { points: [points[6], points[7]], start_0: true },
+    { points: [points[7], points[0]], start_0: false },
     // Square dissecting me vertically (outside)
-    [points[9], points[10]],
-    [points[10], points[11]],
-    [points[11], points[12]],
-    [points[12], points[13]],
-    [points[13], points[14]],
-    [points[14], points[15]],
-    [points[15], points[16]],
-    [points[16], points[9]],
+    { points: [points[9], points[10]], start_0: true },
+    { points: [points[10], points[11]], start_0: false },
+    { points: [points[11], points[12]], start_0: true },
+    { points: [points[12], points[13]], start_0: false },
+    { points: [points[13], points[14]], start_0: true },
+    { points: [points[14], points[15]], start_0: false },
+    { points: [points[15], points[16]], start_0: true },
+    { points: [points[16], points[9]], start_0: false },
     // Horizontal square (outside)
-    [points[17], points[18]],
-    [points[18], points[19]],
-    [points[19], points[20]],
-    [points[20], points[21]],
-    [points[21], points[22]],
-    [points[22], points[23]],
-    [points[23], points[24]],
-    [points[24], points[17]],
+    { points: [points[17], points[18]], start_0: true },
+    { points: [points[18], points[19]], start_0: false },
+    { points: [points[19], points[20]], start_0: true },
+    { points: [points[20], points[21]], start_0: false },
+    { points: [points[21], points[22]], start_0: true },
+    { points: [points[22], points[23]], start_0: false },
+    { points: [points[23], points[24]], start_0: true },
+    { points: [points[24], points[17]], start_0: false },
 ]
 
 const inner_edges = [
-    [points[8], points[10]],
-    [points[8], points[12]],
-    [points[8], points[14]],
-    [points[8], points[18]],
+    { points: [points[8], points[10]], start_0: true },
+    { points: [points[8], points[12]], start_0: false },
+    { points: [points[8], points[14]], start_0: true },
+    { points: [points[8], points[18]], start_0: false },
 
-    [points[8], points[20]],
-    [points[8], points[22]],
-    [points[8], points[24]],
+    { points: [points[8], points[20]], start_0: false },
+    { points: [points[8], points[22]], start_0: false },
+    { points: [points[8], points[24]], start_0: false },
 ]
 
 // WILL NOT USE (the illusion doesn't work)
 const partial_inner_edges = [
-    [points[18], points[25]],
-    [points[20], points[26]],
-    [points[22], points[27]],
-    [points[24], points[28]],
+    { points: [points[18], points[25]], start_0: true },
+    { points: [points[20], points[26]], start_0: false },
+    { points: [points[22], points[27]], start_0: false },
+    { points: [points[24], points[28]], start_0: false },
 ]
 
 

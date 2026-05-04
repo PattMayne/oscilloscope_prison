@@ -74,15 +74,8 @@ document.getElementById('play_btn').addEventListener('click', () => {
 })
 
 file_input.addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader()
-        reader.onload = function(e) {
-            // Create or update the image object that your animation uses
-            conguy.src = e.target.result
-        }
-        reader.readAsDataURL(file)
-    }
+    const file = event.target.files[0]
+    !!file && (conguy.src = URL.createObjectURL(file))
 })
 
 document.getElementById('stop_btn').addEventListener('click', () => {

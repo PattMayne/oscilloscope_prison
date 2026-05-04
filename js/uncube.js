@@ -72,6 +72,13 @@ document.getElementById('play_btn').addEventListener('click', () => {
     show_hide_controls()
 })
 
+document.getElementById('stop_btn').addEventListener('click', () => {
+    if (!playing) return
+
+    source.stop()
+    playing = false
+})
+
 
 document.getElementById('audio_file').addEventListener('change', (e) => {
     const file = e.target.files[0]

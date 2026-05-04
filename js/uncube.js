@@ -30,8 +30,17 @@ let conguy = new Image()
 const ctx = canvas.getContext('2d')
 ctx.strokeStyle = "#ff3700"
 ctx.lineWidth = 2
-let bass_color = document.getElementById("bass_color").value
-let amp_color = document.getElementById("amp_color").value
+
+const bass_color_picker = document.getElementById("bass_color")
+const amp_color_picker = document.getElementById("amp_color")
+const frame_color_picker = document.getElementById("frame_color")
+const draw_frame_toggle = document.getElementById("include_frame")
+
+let draw_frame = draw_frame_toggle.checked
+
+let bass_color = bass_color_picker.value
+let amp_color = amp_color_picker.value
+let frame_color = frame_color_picker.value
 let analyser, data_array, frequency_array, audioBuffer, source, playing = false
 let bass_thickness = 2
 let half_bass_thickness = 1
@@ -83,10 +92,8 @@ const draw = () => {
     ctx.beginPath()
 
     data_array.forEach((element, i) => {
-        let x = (i / data_array.length) * canvas.width
-
-        // the 255 can be modified by the z-axis to make the waves appear smaller in the distance
-        let y = (data_array[i] / 500) * canvas.height
+        const x = (i / data_array.length) * canvas.width
+        const y = (data_array[i] / 500) * canvas.height
 
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
@@ -148,6 +155,52 @@ const draw_wave = (xy_start, xy_end, array_half, taper_start = false) => {
     ctx.stroke()
 }
 
+// BASS CIRCLE
+const draw_circle = () => {
+    if (!playing) return
+
+    const downsampled = []
+    for (let i = 0; i < data_array.length; i += 4) {
+        downsampled.push(data_array[i])
+    }
+
+    const N = downsampled.length
+    ctx.strokeStyle = bass_color
+    ctx.lineWidth = bass_thickness
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+        // Map dataArray[i] (0-255) to [-1, 1]
+        const normalized = (downsampled[i] - 128) / 128
+        // Angle around the circle
+        const theta = (2 * Math.PI * i) / N
+        // Modulate radius
+        const r = circle_base_radius + circle_amplitude * normalized
+
+        const x = cx + r * Math.cos(theta)
+        const y = cy + r * Math.sin(theta)
+
+        if (i === 0) {
+            ctx.moveTo(x, y)
+        } else {
+            ctx.lineTo(x, y)
+        }
+    }
+
+    // Interpolate seam
+    const mid_normalized =
+        ((downsampled[0] - 128) / 128 + (downsampled[N-1] - 128) / 128) / 2
+    const x_mid =
+        cx + (circle_base_radius + circle_amplitude * mid_normalized) *
+        Math.cos(2 * Math.PI)
+    const y_mid =
+        cy + (circle_base_radius + circle_amplitude * mid_normalized) *
+        Math.sin(2 * Math.PI)
+
+    ctx.lineTo(x_mid, y_mid)
+    ctx.closePath()
+    ctx.stroke()
+}
+
 /* 
  * 
  * 
@@ -172,6 +225,11 @@ const img_draw_data = {
     width: canvas.width / 2,
     height: canvas.height / 2
 }
+
+const cx = canvas.width / 2    // center x
+const cy = canvas.height / 2   // center y
+const circle_base_radius = 130 
+const circle_amplitude = 41
 
 const fake_title = true
 const tilt = 0.2
@@ -204,7 +262,7 @@ const get_bass_thickness = () => {
     const bass_average =
         bass_bins.reduce((sum, val) => sum + val, 0) / bass_bins.length
     
-    const max_thickness = 12
+    const max_thickness = 19
     const thickness = (bass_average / 255) * max_thickness
     return thickness < 2 ? 2 : thickness
 }
@@ -220,10 +278,10 @@ const line = (x1, y1, x2, y2, array_half, taper_start) => {
     const xy_end = { x: x2, y: y2 }
 
     // draw bass line:
-    if (!playing || true) {
+    if (!playing || draw_frame) {
         // draw the normal lines (BASS LINES)
         ctx.lineWidth = 3
-        ctx.strokeStyle = bass_color
+        ctx.strokeStyle = frame_color
         ctx.beginPath()  // Start a new drawing path
         ctx.moveTo(x1, y1)  // Move to the start point
         ctx.lineTo(x2, y2)  // Draw a line to the end point
@@ -320,9 +378,12 @@ class model {
             analyser.getByteFrequencyData(frequency_array)
         }
         
-        const half_length = playing ? Math.floor(data_array.length / 2) : 0;
-        const first_half = playing ? data_array.slice(0, half_length) : [];
-        const second_half = playing ? data_array.slice(half_length) : [];
+        const half_length = playing ? Math.floor(data_array.length / 2) : 0
+        const first_half = playing ? data_array.slice(0, half_length) : []
+        const second_half = playing ? data_array.slice(half_length) : []
+
+
+        draw_circle()
         
         // First, draw the points (guarantees rounded corners)
         if (false && playing && bass_thickness > 2) {
@@ -335,7 +396,7 @@ class model {
             const array_half = this_edge.start_0 ? first_half : second_half
             const start = edge_points[0].get_point2d() // Start point of the edge
             const end = edge_points[1].get_point2d() // End point of the edge
-            line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0) // Draw the line between the two points
+            line(start.x, start.y, end.x, end.y, array_half, false) // Draw the line between the two points
         })
 
 
@@ -368,7 +429,7 @@ class model {
                 const array_half = this_edge.start_0 ? first_half : second_half            
                 const start = edge_points[0].get_point2d() // Start point of the edge
                 const end = edge_points[1].get_point2d() // End point of the edge
-                line(start.x, start.y, end.x, end.y, array_half, this_edge.start_0)
+                line(start.x, start.y, end.x, end.y, array_half, false)
             }
         })
 
@@ -544,3 +605,21 @@ const update = () => {
 }
 
 setTimeout(update, timeout)
+
+
+
+bass_color_picker.addEventListener('change', e => {
+    bass_color = e.target.value
+})
+
+amp_color_picker.addEventListener('change', e => {
+    amp_color = e.target.value
+})
+
+frame_color_picker.addEventListener('change', e => {
+    frame_color = e.target.value
+})
+
+draw_frame_toggle.addEventListener('change', e => {
+    draw_frame = e.target.checked
+})

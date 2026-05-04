@@ -1,56 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Projection</title>
+    <link rel="stylesheet" href="./css/foundation.css?ts=5">
     <link rel="stylesheet" href="./css/app.css?">
 </head>
 
 <body>
-    <br><br><br>
+    <div id="page_wrapper">
     <!-- Create a canvas element to draw on -->
     <canvas id="canvas" width="400" height="400"></canvas>
 
 
     <div class="controls">
-        <label>AUDIO FILE:
-            <input type="file" id="audio_file" accept="audio/*">
-        </label>
-        <br>
+        <div class="grid-x">
+            <div class="large-4 medium-5 small-12 cell">
+                <div class="audio_controls">
+                    <button id="play_btn" disabled>Play</button>
+                </div>
+            </div>
 
-        <label>IMAGE FILE:
-            <input type="file" id="image_file" accept="image/*">
-        </label>
-        <br>
+            <div class="large-8 medium-7 small-12 cell">
+                <div class="input_controls">
+                    <div class="input_box">
+                        <label>AUDIO FILE:
+                            <input type="file" id="audio_file" accept="audio/*">
+                        </label>
+                    </div>
+                    <div class="input_box">
+                        <label>IMAGE FILE:
+                            <input type="file" id="image_file" accept="image/*">
+                        </label>
+                    </div>
+                    <div class="input_box">
+                        <label>Include frame?
+                            <input type="checkbox" id="include_frame">
+                        </label>
+                    </div>
+                    <div class="input_box">
+                        <label>FRAME COLOR:
+                            <select id="frame_color">
+                                <option value="#00ff10">Green</option>
+                                <option value="#0095ff">Blue</option>
+                                <option value="#ff3700">Red</option>
+                                <option value="#ffffff" selected>White</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="input_box">
+                        <label>BASS COLOR:
+                            <select id="bass_color">
+                                <option value="#0095ff" selected>Blue</option>
+                                <option value="#ff3700">Red</option>
+                                <option value="#00ff10">Green</option>
+                                <option value="#ffffff">White</option>
+                            </select>
+                        </label>
 
-        <label>BASS COLOR:
-            <select id="bass_color">
-                <option value="#0095ff">Blue</option>
-                <option value="#ff3700">Red</option>
-                <option value="#00ff10">Green</option>
-                <option value="#ffffff">White</option>
-            </select>
-        </label>
+                    </div>
+                    <div class="input_box">
+                        <label>AMPLITUDE COLOR:
+                            <select id="amp_color">
+                                <option value="#00ff10">Green</option>
+                                <option value="#0095ff">Blue</option>
+                                <option value="#ff3700" selected>Red</option>
+                                <option value="#ffffff">White</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-        <br>
-        
-        <label>AMPLITUDE COLOR:
-            <select id="amp_color">
-                <option value="#00ff10">Green</option>
-                <option value="#0095ff">Blue</option>
-                <option value="#ff3700">Red</option>
-                <option value="#ffffff">White</option>
-            </select>
-        </label>
-
-        <br>
-        
-
-        <button id="play_btn" disabled>Play</button>
+        </div>
+    </div>
     </div>
     <script src="./js/uncube.js?version=1492"></script>
+    <script src="./js/vendor/jquery.js"></script>
+    <script src="./js/vendor/what-input.js"></script>
+    <script src="./js/vendor/foundation.js"></script>
 </body>
 
 </html>

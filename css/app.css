@@ -1,12 +1,21 @@
+@font-face {
+    font-family: alte;
+    src: url(../fonts/alte-haas-grotesk.regular.ttf);
+}
+
 body {
     background-color: black;
     color:aliceblue;
+    font-family: alte;
 }
 
 
 .controls {
     width: 100%;
     margin-top:20px;
+    background-color: #333;
+    position: absolute;
+    bottom: 0;
 }
 
 #canvas {
@@ -20,13 +29,14 @@ body {
      */
     width: 25%;
     height: auto;
-    display: block;
+    display: inline-block;
+    margin-top: 20vh;
 }
 
 button, .button {
     background-color: #333;
     color: white;
-    border: none;
+    border: 1px solid #f3f3f3;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
@@ -39,4 +49,34 @@ button, .button {
 button:hover, .button:hover {
     background-color: #555;
     color:black;
+}
+
+#page_wrapper {
+    width: 100%;
+    min-height: 100vh;
+    align-items: center;
+    text-align: center;
+    justify-items: center;
+}
+
+.audio_controls {
+    width: 100%;
+    padding: 10px;
+    margin: 0px;
+    display: flex;
+}
+
+.input_controls {
+    width: 100%;
+    padding: 10px;
+    margin: 0px;
+    display: flex;
+}
+
+.input_box {
+    background-color: rgb(128, 120, 117);
+    border: 1px solid #222;
+    color:#222;
+    padding: 10px;
+    margin: 10px;
 }

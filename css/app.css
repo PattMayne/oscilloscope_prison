@@ -10,7 +10,7 @@ body {
 }
 
 
-.controls {
+#controls {
     width: 100%;
     margin-top:20px;
     background-color: #333;
@@ -63,7 +63,9 @@ button:hover, .button:hover {
     width: 100%;
     padding: 10px;
     margin: 0px;
-    display: flex;
+    text-align: left;
+    display: inline-block;
+    align-items: left;
 }
 
 .input_controls {
@@ -74,9 +76,34 @@ button:hover, .button:hover {
 }
 
 .input_box {
-    background-color: rgb(128, 120, 117);
-    border: 1px solid #222;
-    color:#222;
+    background-color: #333;
+    border: 1px solid #e2e2e2;
+    color:#dddddd;
     padding: 10px;
     margin: 10px;
+}
+
+.input_box label {
+    color:#dddddd;
+}
+
+#hide_btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+}
+
+#show_controls_btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+    background-color: black;
+    border: 1px solid #333;
+    color: #444;
+}
+
+#show_controls_btn:hover {
+    color: #ddd;
 }

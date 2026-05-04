@@ -16,6 +16,9 @@
  * 
 */
 
+const controls = document.getElementById("controls")
+const show_btn = document.getElementById("show_controls_btn")
+show_btn.style.display = "none"
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
@@ -65,7 +68,11 @@ document.getElementById('play_btn').addEventListener('click', () => {
     bass_color = document.getElementById("bass_color").value
     amp_color = document.getElementById("amp_color").value
     source.onended = () => { playing = false }
+
+    show_hide_controls()
 })
+
+
 document.getElementById('audio_file').addEventListener('change', (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -623,3 +630,20 @@ frame_color_picker.addEventListener('change', e => {
 draw_frame_toggle.addEventListener('change', e => {
     draw_frame = e.target.checked
 })
+
+
+// toggle controls
+
+const show_hide_controls = () => {
+    console.log("show_hide_controls called")
+    if (controls.style.display === "none") {
+        controls.style.display = ""
+        show_btn.style.display = "none"
+    } else {
+        controls.style.display = "none"
+        show_btn.style.display = ""
+    }
+}
+
+document.getElementById("hide_btn").addEventListener('click', show_hide_controls)
+document.getElementById("show_controls_btn").addEventListener('click', show_hide_controls)

@@ -25,6 +25,8 @@ const canvas = document.getElementById("canvas")
 const width = canvas.width
 const height = canvas.height
 
+let conguy = new Image()
+
 const ctx = canvas.getContext('2d')
 ctx.strokeStyle = "#ff3700"
 ctx.lineWidth = 2
@@ -36,6 +38,11 @@ let half_bass_thickness = 1
 
 document.getElementById('play_btn').addEventListener('click', function() {
     if (playing) return
+
+    // get the image, if they chose one
+    const file = document.getElementById('image_file').files[0]
+    !!file && (conguy.src = URL.createObjectURL(file))
+
     source = audioContext.createBufferSource()
     source.buffer = audioBuffer
     analyser = audioContext.createAnalyser()
@@ -173,8 +180,6 @@ const guy_is_cool = true
 const dotted_lines = false
 const include_inner_edges = false
 
-//const conguy = document.getElementById("./img/conguy.png")
-let conguy = new Image();
 conguy.src = guy_is_cool ? "./img/coolconguy.png" : "./img/conguy.png"
 
 const timeout = 60 // Timeout for animation update

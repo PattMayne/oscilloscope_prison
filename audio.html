@@ -1,0 +1,60 @@
+<!-- Audio Oscilloscope TOTALLY VIBE-CODED -->
+
+<input type="file" id="audioFile" accept="audio/*">
+<button id="playBtn" disabled>Play</button>
+<canvas id="oscilloscope" width="600" height="200"></canvas>
+<script>
+const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+const canvas = document.getElementById('oscilloscope')
+const ctx = canvas.getContext('2d')
+ctx.strokeStyle = 'black'
+let analyser, dataArray, audioBuffer, source, playing = false
+
+document.getElementById('audioFile').addEventListener('change', function(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = function(ev) {
+        audioContext.decodeAudioData(ev.target.result, (buffer) => {
+            audioBuffer = buffer
+            document.getElementById('playBtn').disabled = false
+        });
+    };
+    reader.readAsArrayBuffer(file)
+});
+
+document.getElementById('playBtn').addEventListener('click', function() {
+    if (playing) return
+    source = audioContext.createBufferSource()
+    source.buffer = audioBuffer
+    analyser = audioContext.createAnalyser()
+    source.connect(analyser)
+    analyser.connect(audioContext.destination)
+    analyser.fftSize = 2048
+    dataArray = new Uint8Array(analyser.fftSize)
+    source.start()
+    playing = true
+    draw()
+    source.onended = () => { playing = false }
+})
+
+function draw() {
+    if (!playing) return;
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.beginPath()
+
+    dataArray.forEach((element, i) => {
+        let x = (i / dataArray.length) * canvas.width
+
+        // the 255 can be modified by the z-axis to make the waves appear smaller in the distance
+        let y = (dataArray[i] / 500) * canvas.height
+
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+    })
+    
+    ctx.stroke()
+    requestAnimationFrame(draw)
+}
+</script>

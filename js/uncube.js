@@ -18,6 +18,7 @@
 
 const controls = document.getElementById("controls")
 const show_btn = document.getElementById("show_controls_btn")
+const file_input = document.getElementById('image_file')
 show_btn.style.display = "none"
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)()
@@ -52,7 +53,7 @@ document.getElementById('play_btn').addEventListener('click', () => {
     if (playing) return
 
     // get the image, if they chose one
-    const file = document.getElementById('image_file').files[0]
+    const file = file_input.files[0]
     !!file && (conguy.src = URL.createObjectURL(file))
 
     source = audioContext.createBufferSource()
@@ -70,6 +71,18 @@ document.getElementById('play_btn').addEventListener('click', () => {
     source.onended = () => { playing = false }
 
     show_hide_controls()
+})
+
+file_input.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader()
+        reader.onload = function(e) {
+            // Create or update the image object that your animation uses
+            conguy.src = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
 })
 
 document.getElementById('stop_btn').addEventListener('click', () => {
@@ -183,8 +196,12 @@ const draw_circle = () => {
     ctx.lineWidth = bass_thickness
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
-        // Map dataArray[i] (0-255) to [-1, 1]
-        const normalized = (downsampled[i] - 128) / 128
+        // set up fades for circle-ends to unite.
+        let fade = 1
+        const fadeLength = 15 // Adjust for softness
+        if (i < fadeLength) fade = i / fadeLength
+        if (i > N - fadeLength) fade = (N - i) / fadeLength
+        const normalized = ((downsampled[i] - 128) / 128) * fade
         // Angle around the circle
         const theta = (2 * Math.PI * i) / N
         // Modulate radius
@@ -200,21 +217,9 @@ const draw_circle = () => {
         }
     }
 
-    // Interpolate seam
-    const mid_normalized =
-        ((downsampled[0] - 128) / 128 + (downsampled[N-1] - 128) / 128) / 2
-    const x_mid =
-        cx + (circle_base_radius + circle_amplitude * mid_normalized) *
-        Math.cos(2 * Math.PI)
-    const y_mid =
-        cy + (circle_base_radius + circle_amplitude * mid_normalized) *
-        Math.sin(2 * Math.PI)
-
-    ctx.lineTo(x_mid, y_mid)
     ctx.closePath()
     ctx.stroke()
 }
-
 /* 
  * 
  * 

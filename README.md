@@ -1,12 +1,4 @@
-# CONSCIOUSNESS ENERGY GRID ANIMATION
+# ENERGY PRISON OSCILLATOR
 
-https://25scripts.com/tutorial/building-3d-projections-with-javascript-and-html
-
-## TO DO:
-- put on website
-- make webpage-based oscilloscope
-    - replace lines with sound wave on each iteration
-    - tilt changes based on (bass, amplitude, etc) (from getByteFrequencyData)
-- Draw complete bass model first (so it NEVER overlaps amp model)
-- Make bass model lower-res version of wave
-
+Three rectangles rotate around an image, each on a different plane dimension.
+The rectangles are composed of lines which are the path for an oscillator, reading from an audio file loaded by the user. Behind it all there's a circle which is also an oscillator, whose thickness is modified by the amount of bass in the stream.

@@ -70,7 +70,7 @@ document.getElementById('audio_file').addEventListener('change', function(e) {
  * oldraw
  */
 function draw() {
-    if (!playing) return;
+    if (!playing) return
     analyser.getByteTimeDomainData(data_array)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.beginPath()
@@ -96,7 +96,7 @@ function draw() {
 // ALSO we're giving the whole delta to each axis.
 // Whichever axis is more straight should get that much more of the change to display.
 const draw_wave = (xy_start, xy_end, array_half, taper_start = false) => {
-    if (!playing) return;
+    if (!playing) return
     
     ctx.beginPath()
 
@@ -308,11 +308,11 @@ class model {
     // Draw the model on the canvas
     draw() {
 
+        set_bass_thickness()
         // Draw the same data array on every line
         if (playing) {
             analyser.getByteTimeDomainData(data_array)
             analyser.getByteFrequencyData(frequency_array)
-            set_bass_thickness()
         }
         
         const half_length = playing ? Math.floor(data_array.length / 2) : 0;

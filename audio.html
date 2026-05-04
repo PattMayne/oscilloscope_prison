@@ -1,4 +1,6 @@
 <!-- Audio Oscilloscope TOTALLY VIBE-CODED -->
+<!-- LEGACY VERSION: The code has been implemented into uncube.js,
+    and this file is no longer used -->
 
 <input type="file" id="audioFile" accept="audio/*">
 <button id="playBtn" disabled>Play</button>
@@ -19,7 +21,7 @@ document.getElementById('audioFile').addEventListener('change', function(e) {
             audioBuffer = buffer
             document.getElementById('playBtn').disabled = false
         });
-    };
+    };1
     reader.readAsArrayBuffer(file)
 });
 

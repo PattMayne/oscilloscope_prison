@@ -23,3 +23,17 @@ https://25scripts.com/tutorial/building-3d-projections-with-javascript-and-html
 - Face in the middle rotates according to amplitude
 - For both of the above we need the average over a certain amount of time... can't be jolting around with each peak
     - OR just make it accumulate somewhere, rather than calculate some averageq
+
+
+### PROBLEM:
+How to do the vertial lines?
+
+then amplitude must be represented with horizontal spikes.
+
+We should make a decision based on difference between x's vs y's. 
+One a horizontal line the Y values will be the same, so they should represent the spikes.
+On a vertial line the X values will be the same, so they should represent the spikes.
+
+Get the percentage of the WAVE POINTS we've cleared in the array,
+and apply that to the percentage of difference between y1 and y2,
+and add that percentage of the difference.

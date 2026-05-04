@@ -1,10 +1,136 @@
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * ~~~~~                         ~~~~~
+ * ~~~~~  AUDIO WAVE INIT STUFF  ~~~~~
+ * ~~~~~                         ~~~~~
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+
 // Access the canvas element and its 2D rendering context
 const canvas = document.getElementById("canvas")
-const width = canvas.width // Canvas width
-const height = canvas.height // Canvas height
-const ctx = canvas.getContext("2d") // 2D drawing context
+const width = canvas.width
+const height = canvas.height
+
+const ctx = canvas.getContext('2d')
 ctx.strokeStyle = "#00ff10"  // Set the color for the line
-ctx.lineWidth = 3  // Set the width of the line
+ctx.lineWidth = 2  // Set the width of the line
+// ctx.strokeStyle = 'black'
+let analyser, dataArray, audioBuffer, source, playing = false
+
+document.getElementById('play_btn').addEventListener('click', function() {
+    if (playing) return
+    source = audioContext.createBufferSource()
+    source.buffer = audioBuffer
+    analyser = audioContext.createAnalyser()
+    source.connect(analyser)
+    analyser.connect(audioContext.destination)
+    analyser.fftSize = 2048
+    dataArray = new Uint8Array(analyser.fftSize)
+    source.start()
+    playing = true
+    //draw()
+    source.onended = () => { playing = false }
+})
+document.getElementById('audio_file').addEventListener('change', function(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = function(ev) {
+        audioContext.decodeAudioData(ev.target.result, (buffer) => {
+            audioBuffer = buffer
+            document.getElementById('play_btn').disabled = false
+        });
+    };1
+    reader.readAsArrayBuffer(file)
+});
+
+
+/** OBSOLETE. We will scavenge wave-drawing logic from this function.
+ * This USED to just draw the wave in a straight path across the canvas.
+ * 
+ * oldraw
+ */
+function draw() {
+    if (!playing) return;
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.beginPath()
+
+    dataArray.forEach((element, i) => {
+        let x = (i / dataArray.length) * canvas.width
+
+        // the 255 can be modified by the z-axis to make the waves appear smaller in the distance
+        let y = (dataArray[i] / 500) * canvas.height
+
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+    })
+    
+    ctx.stroke()
+    requestAnimationFrame(draw)
+}
+
+
+// For now each line (each half line) draws the whole wave.
+// Later we will split the wave in two and share between the two lines.
+const draw_wave = (xy_start, xy_end) => {
+    if (!playing) return;
+    analyser.getByteTimeDomainData(dataArray)
+    ctx.beginPath()
+
+    const array_length = dataArray.length
+    const y_diff = xy_end.y - xy_start.y
+
+
+    ctx.strokeStyle = "#00ff10"  // Set the color for the line
+
+    dataArray.forEach((element, i) => {
+        const percentage_cleared = i / array_length
+        const y_adjustment = (1 - percentage_cleared) * y_diff
+        const x = xy_start.x + (i / dataArray.length) * (xy_end.x - xy_start.x)
+        const y =
+            xy_start.y + // baseline y position. Everything should be added to this.
+            (y_diff * percentage_cleared) + // move up the y-axis as we go through the wave.
+            (element - 128) / 5 // the actual wave oscillation (centered around 0 by subtracting 128)
+
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+    })
+    
+    ctx.stroke()
+}
+
+/* 
+ * 
+ * 
+ * 
+ * 
+ * ###########################
+ * ###########################
+ * #####                 #####
+ * #####  CONGRID STUFF  #####
+ * #####                 #####
+ * ###########################
+ * ###########################
+ * 
+ * 
+ * 
+ * 
+*/
 
 const img_draw_data = {
     x: canvas.width / 4,
@@ -40,10 +166,20 @@ function point(x, y, radius = 5, color = "white") {
 
 
 function line(x1, y1, x2, y2) {
-    ctx.beginPath()  // Start a new drawing path
-    ctx.moveTo(x1, y1)  // Move to the start point
-    ctx.lineTo(x2, y2)  // Draw a line to the end point
-    ctx.stroke()  // Apply the stroke to render the line
+
+    ctx.strokeStyle = "#0095ff"  // Set the color for the line
+
+    if (!playing || true) {
+        ctx.beginPath()  // Start a new drawing path
+        ctx.moveTo(x1, y1)  // Move to the start point
+        ctx.lineTo(x2, y2)  // Draw a line to the end point
+        ctx.stroke()  // Apply the stroke to render the line
+    }
+
+    const xy_start = { x: x1, y: y1 }
+    const xy_end = { x: x2, y: y2 }
+
+    draw_wave(xy_end, xy_start)
 }
 
 
@@ -314,7 +450,7 @@ function update() {
     // rotate and draw the model
     mdl.rotateY(5)
     //mdl.rotateZ(-0.5)
-    mdl.rotateX(0.4)
+    mdl.rotateX(0.7)
     mdl.draw()
 
     // Continuously update the canvas at the specified timeout interval

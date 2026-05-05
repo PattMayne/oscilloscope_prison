@@ -33,7 +33,7 @@ let conguy = new Image()
 
 const ctx = canvas.getContext('2d')
 ctx.strokeStyle = "#ff3700"
-ctx.lineWidth = 2
+ctx.lineWidth = 3
 
 const bass_color_picker = document.getElementById("bass_color")
 const amp_color_picker = document.getElementById("amp_color")

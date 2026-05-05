@@ -11,13 +11,13 @@
 
 <body>
     <div id="page_wrapper">
-    <!-- Create a canvas element to draw on -->
-    <canvas id="canvas" width="400" height="400"></canvas>
-
+    <div id="canvas_wrapper">
+        <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
 
     <div id="controls">
         <div class="grid-x">
-            <div class="large-2 medium-5 small-12 cell">
+            <div class="large-2 medium-3 small-12 cell">
                 <div class="audio_controls">
                     <button id="play_btn">Play</button>
                     <button id="stop_btn">Stop</button>
@@ -25,62 +25,79 @@
                 </div>
             </div>
 
-            <div class="large-10 medium-7 small-12 cell">
-                <div class="input_controls">
-                    <div class="input_box">
-                        <label>UPLOAD AUDIO:
-                            <input type="file" id="audio_file" accept="audio/*">
-                        </label>
-                    </div>
-                    <div class="input_box">
-                        <label>UPLOAD IMAGE:
-                            <input type="file" id="image_file" accept="image/*">
-                        </label>
-                    </div>
-                    <div class="input_box">
-                        <label>INCLUDE FRAME?
-                            <input type="checkbox" id="include_frame">
-                        </label>
-                    </div>
-                    <div class="input_box">
-                        <label>FRAME COLOR:
-                            <select id="frame_color">
-                                <option value="#00ff10">Green</option>
-                                <option value="#0095ff">Blue</option>
-                                <option value="#ff3700">Red</option>
-                                <option value="#ffffff" selected>White</option>
-                                <option value="#f7df0d">Yellow</option>
-                                <option value="#333333">Gray</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div class="input_box">
-                        <label>BASS COLOR:
-                            <select id="bass_color">
-                                <option value="#0095ff" selected>Blue</option>
-                                <option value="#ff3700">Red</option>
-                                <option value="#00ff10">Green</option>
-                                <option value="#ffffff">White</option>
-                                <option value="#f7df0d">Yellow</option>
-                                <option value="#333333">Gray</option>
-                            </select>
-                        </label>
+            <div class="large-10 medium-9 small-12 cell">
 
+                <div class="grid-x">
+                    <div class="large-6 medium-6 small-12 cell">
+
+                        <div class="input_controls">
+                            <div class="input_box">
+                                <label>UPLOAD AUDIO:
+                                    <input type="file" id="audio_file" accept="audio/*">
+                                </label>
+                            </div>
+                            <div class="input_box">
+                                <label>UPLOAD IMAGE:
+                                    <input type="file" id="image_file" accept="image/*">
+                                </label>
+                            </div>
+                            <div class="input_box">
+                                <label>INCLUDE FRAME?
+                                    <input type="checkbox" id="include_frame">
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="input_box">
-                        <label>AMPLITUDE COLOR:
-                            <select id="amp_color">
-                                <option value="#00ff10">Green</option>
-                                <option value="#0095ff">Blue</option>
-                                <option value="#ff3700" selected>Red</option>
-                                <option value="#ffffff">White</option>
-                                <option value="#f7df0d">Yellow</option>
-                                <option value="#333333">Gray</option>
-                            </select>
-                        </label>
+
+
+                    <div class="large-6 medium-6 small-12 cell">
+                        <div class="input_controls">
+                            <div class="input_box">
+                                <label>FRAME COLOR:
+                                    <select id="frame_color">
+                                        <option value="#00ff10">Green</option>
+                                        <option value="#0095ff">Blue</option>
+                                        <option value="#ff3700">Red</option>
+                                        <option value="#ffffff" selected>White</option>
+                                        <option value="#f7df0d">Yellow</option>
+                                        <option value="#333333">Gray</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="input_box">
+                                <label>BASS COLOR:
+                                    <select id="bass_color">
+                                        <option value="#0095ff" selected>Blue</option>
+                                        <option value="#ff3700">Red</option>
+                                        <option value="#00ff10">Green</option>
+                                        <option value="#ffffff">White</option>
+                                        <option value="#f7df0d">Yellow</option>
+                                        <option value="#333333">Gray</option>
+                                    </select>
+                                </label>
+
+                            </div>
+                            <div class="input_box">
+                                <label>AMPLITUDE COLOR:
+                                    <select id="amp_color">
+                                        <option value="#00ff10">Green</option>
+                                        <option value="#0095ff">Blue</option>
+                                        <option value="#ff3700" selected>Red</option>
+                                        <option value="#ffffff">White</option>
+                                        <option value="#f7df0d">Yellow</option>
+                                        <option value="#333333">Gray</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-            </div>
+
+
+
+                </div>
+   
         </div>
         
     </div>
@@ -96,7 +113,5 @@
 
 
 <!--
-
-        background-image: url('./img/cool_bro_C.jpg');
-
+    background-image: url('./img/cool_bro_C.jpg');
 -->

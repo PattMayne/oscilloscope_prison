@@ -18,6 +18,24 @@ body {
     bottom: 0;
 }
 
+#page_wrapper {
+    width: 100%;
+    min-height: 100vh;
+    align-items: center;
+    text-align: center;
+    justify-items: center;
+}
+
+#canvas_wrapper {
+    align-items: center;
+    text-align: center;
+    justify-items: center;
+    width: 100%;
+    max-width: 500px;
+    justify-content: center;
+    display: inline-block
+}
+
 #canvas {
     background: transparent;
     /*
@@ -27,10 +45,10 @@ body {
     background-repeat: no-repeat;
     background-position: center;
      */
-    width: 25%;
+    width: 100%;
     height: auto;
     display: inline-block;
-    margin-top: 20vh;
+    margin-top: 10vh;
 }
 
 button, .button {
@@ -42,7 +60,7 @@ button, .button {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 4px 2px 4px 0px;
     cursor: pointer;
 }
 
@@ -51,17 +69,9 @@ button:hover, .button:hover {
     color:black;
 }
 
-#page_wrapper {
-    width: 100%;
-    min-height: 100vh;
-    align-items: center;
-    text-align: center;
-    justify-items: center;
-}
-
 .audio_controls {
     width: 100%;
-    padding: 10px;
+    padding: 3px;
     margin: 0px;
     text-align: left;
     display: inline-block;
@@ -70,29 +80,22 @@ button:hover, .button:hover {
 
 .input_controls {
     width: 100%;
-    padding: 10px;
+    padding: 0px;
     margin: 0px;
     display: flex;
 }
 
 .input_box {
-    background-color: #333;
-    border: 1px solid #e2e2e2;
+    background-color: #111;
     color:#dddddd;
-    padding: 10px;
-    margin: 10px;
+    padding: 5px;
+    margin: 3px;
 }
 
 .input_box label {
     color:#dddddd;
 }
 
-#hide_btn {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    margin: 10px;
-}
 
 #show_controls_btn {
     position: absolute;
@@ -105,5 +108,10 @@ button:hover, .button:hover {
 }
 
 #show_controls_btn:hover {
-    color: #ddd;
+    color: #a56011;
+}
+
+.cell {
+    padding: 0px;
+    margin: 0px;
 }
